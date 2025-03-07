@@ -7,7 +7,7 @@ import java.util.*;
 @Data
 public class Account {
 
-    private String accName;
+    private String name;
     private double netLiquidity;
     private double balance;
     private TreeMap<String, Trade> trades;
@@ -20,8 +20,8 @@ public class Account {
 
 
 
-    public Account(String accName, double netLiquidity) {
-        this.accName = accName;
+    public Account(String name, double netLiquidity) {
+        this.name = name;
         this.netLiquidity = netLiquidity;
         this.balance = netLiquidity;
         trades = new TreeMap<>();

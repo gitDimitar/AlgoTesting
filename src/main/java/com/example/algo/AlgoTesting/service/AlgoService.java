@@ -8,6 +8,7 @@ import com.example.algo.AlgoTesting.model.indicators.RVOL;
 import com.example.algo.AlgoTesting.model.indicators.SMAVolume;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -20,27 +21,26 @@ import java.util.List;
 @Service
 public class AlgoService {
 
+    @Autowired
+    private FileUtils fileUtils;
     private List<BarData> barDataList;
     private List<Double> closingPrices;
     private List<Double> barVolumes;
-    private Account account = new Account("Pull Back Account", 2000);
+    private Account account = new Account("Pullback trading $2000 starting capital", 2000);
 
-    public void initiateTestByTicker(String ticker) throws Exception {
-        List<File> fileList = new ArrayList<>();
-        File dir = new File("src/main/resources/");
-        if(!dir.isDirectory()) throw new IllegalStateException("wtf mate?");
-        for(File file : dir.listFiles()) {
-            if(file.getName().startsWith(ticker)) {
-                fileList.add(file);
-                parseFile(file, ticker);
+    public void initiateTestByTicker(String ticker, String timeFrame) throws Exception {
+
+        List<File> fileList = fileUtils.getFileList("src/main/resources/"+ timeFrame + "/", ticker);
+        for(File file : fileList) {
+            if(ticker == null) {
+                ticker = file.getName().substring(0, file.getName().lastIndexOf('-'));
             }
+            parseIntraDayFile(file, ticker);
         }
         //fileList.forEach(f -> System.out.println(f.getName()));
-
-
     }
 
-    public void parseFile(File file, String ticker) throws Exception {
+    public void parseIntraDayFile(File file, String ticker) throws Exception {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonNodeList;
         barDataList = new ArrayList<>();
@@ -48,7 +48,7 @@ public class AlgoService {
         barVolumes = new ArrayList<>();
 
         jsonNodeList = objectMapper.readTree(file);
-        jsonNodeList.get("bars").forEach(n -> {
+        jsonNodeList.forEach(n -> {
             try {
                 barDataList.add(createBarData(n));
             } catch (ParseException e) {
@@ -137,6 +137,7 @@ public class AlgoService {
         account.getTrades().forEach((k,v) -> {System.out.println(k + " -> " + v + "\n");});
         account.printStatistics();
 
+        System.out.println("Account Name: " + account.getName());
         System.out.println("Account Balance : " + account.getBalance());
         System.out.println("Account Net Liquidity : " + account.getNetLiquidity());
     }
