@@ -51,6 +51,7 @@ public class DataGatheringService {
         RestClient restClient = RestClient.builder().baseUrl("https://data.alpaca.markets/").build();
         String nextPageToken = null;
         String symbolsString = String.join(",", symbols);
+        if(checkIfFileExists(symbols, timeframe, startDate)) return;
 
         do  {
             String uri = UriComponentsBuilder.fromPath("v2/stocks/bars")
@@ -77,6 +78,14 @@ public class DataGatheringService {
             nextPageToken = parseBarsResponse(alpacaDailyDataResponse, timeframe, startDate);
         } while (nextPageToken != null && !nextPageToken.equals("null"));
         removeDoubleSquareBrackets();
+    }
+
+    private boolean checkIfFileExists(List<String> symbols, String timeframe, String startDate) {
+        if(symbols.size() > 1) return false;
+
+        String fileName = "src/main/resources/" + timeframe +  "/" + symbols.get(0) + "-"+ startDate.substring(0, startDate.indexOf("T")) + "-" + timeframe + ".json";
+        File file = new File(fileName);
+        return file.exists();
     }
 
     private String parseBarsResponse(String jsonResponse, String timeframe, String date) throws JsonProcessingException {
@@ -132,6 +141,7 @@ public class DataGatheringService {
 
     }
 
+    //TODO: if data exists for that day, skip it, don't override file
     private void findGappingDays() {
         List<File> dailyList = fileUtils.getFileList("src/main/resources/1D/", null);
 
