@@ -187,6 +187,8 @@ public class DataGatheringService {
         tickers.add("SOPA");
         tickers.add("GTBP");
         tickers.add("WAFU");
+        tickers.add("GV");
+        tickers.add("DWTX");
         /*
         try (CSVReader csvReader = new CSVReader(new FileReader("src/main/resources/screener/small_caps_1_to_20_2025-03-05.csv"));) {
             String[] values = null;

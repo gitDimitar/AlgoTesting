@@ -4,6 +4,7 @@ import com.example.algo.AlgoTesting.model.Account;
 import com.example.algo.AlgoTesting.model.BarData;
 import com.example.algo.AlgoTesting.model.Trade;
 import com.example.algo.AlgoTesting.model.indicators.EMA;
+import com.example.algo.AlgoTesting.model.indicators.MACD;
 import com.example.algo.AlgoTesting.model.indicators.RVOL;
 import com.example.algo.AlgoTesting.model.indicators.SMAVolume;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -25,6 +26,7 @@ public class AlgoService {
     private FileUtils fileUtils;
     private List<BarData> barDataList;
     private List<Double> closingPrices;
+    private List<Double> macdPrices;
     private List<Double> barVolumes;
     private Account account = new Account("Pullback trading $2000 starting capital", 2000);
 
@@ -46,6 +48,7 @@ public class AlgoService {
         barDataList = new ArrayList<>();
         closingPrices = new ArrayList<>();
         barVolumes = new ArrayList<>();
+        macdPrices = new ArrayList<>();
 
         jsonNodeList = objectMapper.readTree(file);
         jsonNodeList.forEach(n -> {
@@ -82,7 +85,10 @@ public class AlgoService {
         SMAVolume smaVol50 = new SMAVolume(barVolumes, 50);
         RVOL relativeVolume = new RVOL(volume, smaVol50.get());
 
-        //MACD macd = new MACD(ema12, ema26, closingPrices, 12, 26, 9);
+        MACD macd = new MACD(ema12, ema26, closingPrices);
+        macdPrices.add(macd.get());
+        EMA signalLine = new EMA(macdPrices, 9);
+        macd.update(signalLine.get());
 
         barData.addIndicator("12 EMA", ema12);
         barData.addIndicator("26 EMA", ema26);
@@ -90,7 +96,7 @@ public class AlgoService {
         barData.addIndicator("20 EMA", ema20);
         barData.addIndicator("50 SMA Vol", smaVol50);
         barData.addIndicator("RVOL", relativeVolume);
-        //barData.addIndicator(macd);
+        barData.addIndicator("MACD", macd);
 
         return barData;
     }
